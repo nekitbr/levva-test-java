@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    active: [ "local_vault", "devl" ]
+  main:
+    allow-bean-definition-overriding: true
+springdoc:
+  api-docs:
+    path: /swagger-api-docs
+  swagger-ui:
+    path: /swagger-ui

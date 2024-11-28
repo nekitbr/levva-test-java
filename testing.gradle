@@ -1,0 +1,34 @@
+tasks.named('test') {
+    // enable JUnit Platform (JUnit 5) support
+    useJUnitPlatform()
+
+    // set a system property for the test JVM(s)
+    //systemProperty 'some.prop', 'value'
+
+    // explicitly include or exclude tests
+    //include 'org/foo/**'
+    //exclude 'org/boo/**'
+
+    // show standard out and standard error of the test JVM(s) on the console
+    testLogging.showStandardStreams = true
+
+    // set heap size for the test JVM(s)
+    minHeapSize = "128m"
+    maxHeapSize = "512m"
+
+    // set JVM arguments for the test JVM(s)
+    //jvmArgs '-Dspring.main.allow-bean-definition-overriding=true'
+
+    // listen to events in the test execution lifecycle
+    //beforeTest {
+    // descriptor -> logger.lifecycle("running test: " + descriptor)
+    //}
+
+    // fail the 'test' task on the first test failure
+    failFast = true
+
+    // listen to standard out and standard error of the test JVM(s)
+    onOutput {
+        descriptor, event -> logger.lifecycle("test: " + descriptor + " produced standard out/err: " + event.message)
+    }
+}
