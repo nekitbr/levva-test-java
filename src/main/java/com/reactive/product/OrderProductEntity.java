@@ -1,4 +1,4 @@
-package com.reactive.order;
+package com.reactive.product;
 
 import com.reactive.config.audit.CustomAudit;
 import lombok.AllArgsConstructor;

@@ -1,9 +1,12 @@
 package com.reactive.order;
 
 import com.reactive.order.queue.OrderRequest;
-import com.reactive.order.dtos.Product;
+import com.reactive.product.Product;
+import com.reactive.product.OrderProductEntity;
+import com.reactive.product.OrderProductRepository;
+import com.reactive.product.ProductService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,9 +14,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.Currency;
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -23,6 +26,7 @@ public class OrderService {
     private final ReactiveRedisTemplate<String, String> redisTemplate;
 
     private static final String PROCESSED_ID_PREFIX = "order_code=";
+    private final ProductService productService;
 
     /**
      * in an ideal scenario, each step (filter, create order, save products, finish order) would be done by a separate scheduler or queue,
@@ -38,20 +42,15 @@ public class OrderService {
             .flatMap(this::finishOrderProcess);
     }
 
-    public Mono<OrderRequest> getOrderById(Long key) {
-        return orderRepository
-            .findById(key)
-            .map(this::mapToResponse);
+    public Mono<Order> getOrderById(Long id) {
+        return orderRepository.findById(id)
+            .zipWith(productService.getProductsByOrderId(id).collectList())
+            .map(tuple2 -> mapToResponse(tuple2.getT1(), tuple2.getT2()));
     }
 
-    private Mono<Boolean> isReceivedCache(String code) {
-        return redisTemplate.opsForValue()
-            .get(PROCESSED_ID_PREFIX + code)
-            .map(existingValue -> {
-                log.info("code " + code + " exists!");
-                return true;
-            })
-            .defaultIfEmpty(false);
+    public Flux<Order> getOrdersByPage(int page, int size) {
+        return orderRepository.findAllBy(PageRequest.of(page, size))
+            .map(orderEntity -> mapToResponse(orderEntity, List.of()));
     }
 
     private Mono<Boolean> markAsReceivedCache(String code) {
@@ -98,10 +97,16 @@ public class OrderService {
         return orderRepository.save(unsavedOrder);
     }
 
-    private OrderRequest mapToResponse(OrderEntity orderEntity) {
-        return OrderRequest.builder()
-            .fiscalCode(orderEntity.getFiscalCode())
-            .build();
+    private Order mapToResponse(OrderEntity orderEntity, List<Product> products) {
+        return Order.builder()
+                .id(orderEntity.getId())
+                .status(orderEntity.getStatus())
+                .price(orderEntity.getPrice())
+                .fiscalCode(orderEntity.getFiscalCode())
+                .currency(Currency.getInstance(orderEntity.getCurrency()))
+                .customerId(orderEntity.getCustomerId())
+                .products(products)
+                .build();
     }
 
 }

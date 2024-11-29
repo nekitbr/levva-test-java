@@ -1,4 +1,4 @@
-package com.reactive.order.dtos;
+package com.reactive.product;
 
 import lombok.Data;
 
