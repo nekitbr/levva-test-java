@@ -18,3 +18,7 @@ spring:
     port: ${secrets.rabbitmq.port}
     username: ${secrets.rabbitmq.username}
     password: ${secrets.rabbitmq.password}
+  data:
+    redis:
+      host: ${secrets.redis.host}
+      port: ${secrets.redis.port}

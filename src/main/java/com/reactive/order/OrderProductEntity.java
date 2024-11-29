@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.io.Serializable;
@@ -16,13 +15,11 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "orders")
-public class OrderEntity extends CustomAudit implements Serializable {
-    @Id
+@Table(name = "order_products")
+public class OrderProductEntity extends CustomAudit implements Serializable {
     private Long id;
-    private String fiscalCode;
-    private OrderStatus status;
+    private String name;
     private Double price;
-    private String currency;
-    private Long customerId;
+    private Long quantity;
+    private Long orderId;
 }

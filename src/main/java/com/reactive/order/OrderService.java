@@ -1,16 +1,17 @@
 package com.reactive.order;
 
-import com.reactive.order.dtos.Order;
-import com.reactive.order.dtos.OrderIdentifier;
-import com.reactive.order.dtos.OrderPatchRequest;
+import com.reactive.order.queue.OrderRequest;
+import com.reactive.order.dtos.Product;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.reactive.order.dtos.OrderIdentifier.ID;
+import java.time.Duration;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -18,74 +19,89 @@ import static com.reactive.order.dtos.OrderIdentifier.ID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderProductRepository orderProductRepository;
+    private final ReactiveRedisTemplate<String, String> redisTemplate;
 
+    private static final String PROCESSED_ID_PREFIX = "order_code=";
+
+    /**
+     * in an ideal scenario, each step (filter, create order, save products, finish order) would be done by a separate scheduler or queue,
+     * but for simplicity’s sake I'm just doing everything at the same place with separate steps as methods.
+     */
     @Transactional
-    public Flux<Order> getProducts() {
+    public Mono<OrderEntity> processOrderRequest(OrderRequest orderRequest) {
+        return isOrderEligibleToProcess(orderRequest.getFiscalCode())
+            .filter(e -> e)
+            .flatMap(unused -> markAsReceivedCache(orderRequest.getFiscalCode()))
+            .flatMap(unused -> createOrder(orderRequest))
+            .flatMap(orderEntity -> saveOrderProducts(orderRequest.getProducts(), orderEntity.getId()).thenReturn(orderEntity))
+            .flatMap(this::finishOrderProcess);
+    }
+
+    public Mono<OrderRequest> getOrderById(Long key) {
         return orderRepository
-                .findAll()
-                .map(this::mapToResponse);
+            .findById(key)
+            .map(this::mapToResponse);
     }
 
-    private Mono<OrderEntity> getProductEntityById(Long key) {
-        return getProductEntityByIdentifier(String.valueOf(key), ID);
+    private Mono<Boolean> isReceivedCache(String code) {
+        return redisTemplate.opsForValue()
+            .get(PROCESSED_ID_PREFIX + code)
+            .map(existingValue -> {
+                log.info("code " + code + " exists!");
+                return true;
+            })
+            .defaultIfEmpty(false);
     }
 
-    public Mono<Order> getProductByIdentifier(String key, OrderIdentifier identifier) {
-        return getProductEntityByIdentifier(key, identifier)
-                .map(this::mapToResponse);
+    private Mono<Boolean> markAsReceivedCache(String code) {
+        return redisTemplate.opsForValue()
+            .set(PROCESSED_ID_PREFIX + code, "processed")
+            .then(redisTemplate.expire(PROCESSED_ID_PREFIX + code, Duration.ofHours(1)));
     }
 
-    public Mono<Void> deleteProductById(Long id) {
-        return orderRepository.deleteById(id);
+    private Mono<Boolean> isOrderEligibleToProcess(String fiscalCode) {
+        return orderRepository.existsByFiscalCode(fiscalCode) // if not, exists in database long-term storage?
+            .map(exists -> !exists) // if not then is eligible
+            .switchIfEmpty(Mono.just(false));
     }
 
-    private Mono<OrderEntity> getProductEntityByIdentifier(String key, OrderIdentifier identifier) {
-        return switch (identifier) {
-            case ID -> orderRepository.findById(Long.parseLong(key));
-//            case BARCODE -> productTenantRepository.findByBarcode(key);
-//            case QRCODE -> productTenantRepository.findByQrCode(key);
-            case null, default -> Mono.empty();
-        };
+    private Mono<OrderEntity> finishOrderProcess(OrderEntity orderEntity) {
+        orderEntity.setStatus(OrderStatus.FINISHED);
+        return orderRepository.save(orderEntity);
     }
 
-    @Transactional
-    public Mono<Order> saveNewProduct(Order order) {
-        return orderRepository
-                .save(mapToEntity(order))
-                .map(this::mapToResponse);
+    private Mono<Void> saveOrderProducts(List<Product> products, Long orderId) {
+        return Flux.fromIterable(products)
+            .flatMap(product -> {
+                var unsavedOrderProduct = OrderProductEntity.builder()
+                    .orderId(orderId)
+                    .name(product.getName())
+                    .quantity(product.getQuantity())
+                    .price(product.getPrice())
+                    .build();
+
+                return orderProductRepository.save(unsavedOrderProduct);
+            })
+            .then();
     }
 
-    @Transactional
-    public Mono<Void> patchProductImage(Long id, OrderPatchRequest patchProductImage) {
-        return getProductEntityById(id)
-                .map(product -> {
-                    product.setImageUrl(patchProductImage.getImageUrl());
-                    return product;
-                })
-                .flatMap(orderRepository::save)
-                .then();
+    private Mono<OrderEntity> createOrder(OrderRequest orderRequest) {
+        var unsavedOrder = OrderEntity.builder()
+            .fiscalCode(orderRequest.getFiscalCode())
+            .price(orderRequest.getProducts().stream().mapToDouble(Product::getPrice).sum())
+            .currency(orderRequest.getCurrency().getCurrencyCode())
+            .status(OrderStatus.CREATED)
+            .customerId(orderRequest.getCustomerId())
+            .build();
+
+        return orderRepository.save(unsavedOrder);
     }
 
-    private OrderEntity mapToEntity(Order orderDTO) {
-        return OrderEntity.builder()
-                .id(orderDTO.getId())
-                .title(orderDTO.getTitle())
-                .description(orderDTO.getDescription())
-                .price(orderDTO.getPrice())
-                .currency(orderDTO.getCurrency())
-                .imageUrl(orderDTO.getImageUrl())
-                .build();
-    }
-
-    private Order mapToResponse(OrderEntity orderEntity) {
-        return Order.builder()
-                .id(orderEntity.getId())
-                .title(orderEntity.getTitle())
-                .description(orderEntity.getDescription())
-                .price(orderEntity.getPrice())
-                .currency(orderEntity.getCurrency())
-                .imageUrl(orderEntity.getImageUrl())
-                .build();
+    private OrderRequest mapToResponse(OrderEntity orderEntity) {
+        return OrderRequest.builder()
+            .fiscalCode(orderEntity.getFiscalCode())
+            .build();
     }
 
 }

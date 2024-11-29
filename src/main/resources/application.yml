@@ -3,6 +3,10 @@ spring:
     active: [ "local_vault", "devl" ]
   main:
     allow-bean-definition-overriding: true
+  rabbitmq:
+    listener:
+      simple:
+        acknowledge-mode: manual
 springdoc:
   api-docs:
     path: /swagger-api-docs
