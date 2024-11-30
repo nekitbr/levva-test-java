@@ -25,13 +25,14 @@ public class OrderListener {
     private static final String PROCESSED_ID_PREFIX = "order_code=";
 
     @RabbitListener(queues = RabbitMQConfig.ORDER_QUEUE)
-    public Mono<OrderEntity> processOrderRequest(OrderRequest orderRequest) {
+    public Mono<Void> processOrderRequest(OrderRequest orderRequest) {
         return wasAlreadyReceived(orderRequest.getFiscalCode())
             .filter(e -> !e)
             .flatMap(unused -> markAsReceivedCache(orderRequest.getFiscalCode()))
             .flatMap(unused -> orderService.processOrderRequest(orderRequest))
             .onErrorResume(DuplicateKeyException.class, ex -> handleDuplicateKeyException(orderRequest, ex))
-            .onErrorResume(RuntimeException.class, ex -> handleRuntimeException(orderRequest, ex));
+            .onErrorResume(RuntimeException.class, ex -> handleRuntimeException(orderRequest, ex))
+            .then();
     }
 
     private static Mono<OrderEntity> handleDuplicateKeyException(OrderRequest orderRequest, DuplicateKeyException exception) {

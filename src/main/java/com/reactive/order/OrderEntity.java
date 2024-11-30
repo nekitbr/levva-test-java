@@ -1,6 +1,6 @@
 package com.reactive.order;
 
-import com.reactive.config.mongodb.CustomAuditMongo;
+import com.reactive.config.mongodb.CustomAudit;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "orders")
-public class OrderEntity extends CustomAuditMongo implements Serializable {
+public class OrderEntity extends CustomAudit implements Serializable {
 
     @Id
     private String id;

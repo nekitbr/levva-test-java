@@ -1,6 +1,5 @@
 package com.reactive.config.mongodb;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +7,7 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
 
@@ -17,24 +16,20 @@ import java.time.Instant;
 @NoArgsConstructor
 public class CustomAudit {
 
-    @JsonIgnore
     @CreatedDate
-    @Column("created_at")
+    @Field("created_at")
     private Instant createdAt;
 
-    @JsonIgnore
     @CreatedBy
-    @Column("created_by")
+    @Field("created_by")
     private String createdBy;
 
-    @JsonIgnore
     @LastModifiedDate
-    @Column("updated_at")
+    @Field("updated_at")
     private Instant updatedAt;
 
-    @JsonIgnore
     @LastModifiedBy
-    @Column("updated_by")
+    @Field("updated_by")
     private String updatedBy;
 
 }
