@@ -7,6 +7,9 @@ spring:
     listener:
       simple:
         acknowledge-mode: manual
+  data:
+    mongodb:
+      auto-index-creation: true
 springdoc:
   api-docs:
     path: /swagger-api-docs

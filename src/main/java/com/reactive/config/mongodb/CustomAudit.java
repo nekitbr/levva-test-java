@@ -1,4 +1,4 @@
-package com.reactive.config.audit;
+package com.reactive.config.mongodb;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;

@@ -22,3 +22,6 @@ spring:
     redis:
       host: ${secrets.redis.host}
       port: ${secrets.redis.port}
+    mongodb:
+      database: ${secrets.mongodb.database}
+      uri: ${secrets.mongodb.uri}

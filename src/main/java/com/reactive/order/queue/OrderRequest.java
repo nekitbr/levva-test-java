@@ -1,6 +1,6 @@
 package com.reactive.order.queue;
 
-import com.reactive.product.Product;
+import com.reactive.order.Product;
 import lombok.Builder;
 import lombok.Data;
 

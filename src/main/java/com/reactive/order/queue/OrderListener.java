@@ -13,7 +13,6 @@ import reactor.core.publisher.Mono;
 
 import java.text.MessageFormat;
 import java.time.Duration;
-import java.util.function.Function;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,30 +25,33 @@ public class OrderListener {
     private static final String PROCESSED_ID_PREFIX = "order_code=";
 
     @RabbitListener(queues = RabbitMQConfig.ORDER_QUEUE)
-    public Mono<Void> processOrderRequest(OrderRequest orderRequest) {
+    public Mono<OrderEntity> processOrderRequest(OrderRequest orderRequest) {
         return wasAlreadyReceived(orderRequest.getFiscalCode())
             .filter(e -> !e)
             .flatMap(unused -> markAsReceivedCache(orderRequest.getFiscalCode()))
             .flatMap(unused -> orderService.processOrderRequest(orderRequest))
-            .onErrorResume(DuplicateKeyException.class, handleDuplicateKeyException(orderRequest))
-            .then();
+            .onErrorResume(DuplicateKeyException.class, ex -> handleDuplicateKeyException(orderRequest, ex))
+            .onErrorResume(RuntimeException.class, ex -> handleRuntimeException(orderRequest, ex));
     }
 
-    private static Function<DuplicateKeyException, Mono<? extends OrderEntity>> handleDuplicateKeyException(OrderRequest orderRequest) {
-        return exception -> {
-            log.error(MessageFormat.format("Deduplication Failure on orderCode={0} processing: {1}",
-                orderRequest.getFiscalCode(), exception.getCause().getLocalizedMessage()));
-            return Mono.empty();
-        };
+    private static Mono<OrderEntity> handleDuplicateKeyException(OrderRequest orderRequest, DuplicateKeyException exception) {
+        log.error(MessageFormat.format("Deduplication Failure on orderCode={0} processing: {1}",
+            orderRequest.getFiscalCode(), exception.getCause().getLocalizedMessage()));
+        return Mono.empty();
+    }
+
+    private Mono<OrderEntity> handleRuntimeException(OrderRequest orderRequest, RuntimeException exception) {
+        log.error(MessageFormat.format("Process Failure on orderCode={0}: {1}",
+            orderRequest.getFiscalCode(), exception.getMessage()));
+
+        return removeFromCache(orderRequest.getFiscalCode())
+            .flatMap(e -> Mono.empty());
     }
 
     private Mono<Boolean> wasAlreadyReceived(String code) {
         return redisTemplate.opsForValue()
             .get(PROCESSED_ID_PREFIX + code)
-            .map(existingValue -> {
-                log.info("code " + code + " exists!");
-                return true;
-            })
+            .map(existingValue -> true)
             .defaultIfEmpty(false);
     }
 
@@ -57,6 +59,10 @@ public class OrderListener {
         return redisTemplate.opsForValue()
             .set(PROCESSED_ID_PREFIX + code, "processed")
             .then(redisTemplate.expire(PROCESSED_ID_PREFIX + code, Duration.ofHours(1)));
+    }
+
+    private Mono<Long> removeFromCache(String code) {
+        return redisTemplate.delete(PROCESSED_ID_PREFIX + code, "processed");
     }
 
 }
