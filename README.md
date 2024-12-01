@@ -10,7 +10,7 @@ ___
 
 ### Infraestrutura
 
-![infrastructure](readme_assets/infra.jpg "infrastructure")
+![infrastructure](readme_assets/infrastructure.jpg "infrastructure")
 
 ### Banco de Dados
 
