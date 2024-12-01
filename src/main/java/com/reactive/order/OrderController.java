@@ -22,7 +22,7 @@ public class OrderController {
     @Operation(description = "returns an order that matches the given id")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{id}")
-    public Mono<OrderEntity> getOrderById(@PathVariable Long id) {
+    public Mono<OrderEntity> getOrderById(@PathVariable String id) {
         return orderService.getOrderById(id);
     }
 
@@ -33,4 +33,10 @@ public class OrderController {
         return orderService.getOrdersByPage(page, size);
     }
 
+    @Operation(description = "returns an order that matches the given fiscal code")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/fiscalcode/{fiscalCode}")
+    public Mono<OrderEntity> getOrderByFiscalCode(@PathVariable String fiscalCode) {
+        return orderService.getOrderByFiscalCode(fiscalCode);
+    }
 }

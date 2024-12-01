@@ -21,7 +21,11 @@ public class OrderService {
             .flatMap(unused -> createOrder(orderRequest));
     }
 
-    public Mono<OrderEntity> getOrderById(Long id) {
+    public Mono<OrderEntity> getOrderByFiscalCode(String fiscalCode) {
+        return orderRepository.findByFiscalCode(fiscalCode);
+    }
+
+    public Mono<OrderEntity> getOrderById(String id) {
         return orderRepository.findById(id);
     }
 
