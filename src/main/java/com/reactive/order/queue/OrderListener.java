@@ -46,7 +46,7 @@ public class OrderListener {
             orderRequest.getFiscalCode(), exception.getMessage()));
 
         return removeFromCache(orderRequest.getFiscalCode())
-            .flatMap(e -> Mono.empty());
+            .flatMap(e -> Mono.error(exception));
     }
 
     private Mono<Boolean> wasAlreadyReceived(String code) {
