@@ -1,31 +1,22 @@
 dependencies {
     project.ext {
         lombokVersion = "1.18.32"
-        postgresqlJdbcVersion = "42.7.3"
-        r2dbcPostgreSqlVersion = "1.0.5.RELEASE"
         openApiVersion = "2.5.0"
         springBootStarterVersion = "3.3.0"
-        flywayVersion = "10.10.0"
         reactorTestVersion = "3.6.6"
         junitVersion = "1.10.2"
     }
 
-    implementation "org.springframework.boot:spring-boot-starter-data-r2dbc:${springBootStarterVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux:${springBootStarterVersion}"
     implementation "org.springframework.boot:spring-boot-starter-validation:${springBootStarterVersion}"
     implementation "org.springframework.boot:spring-boot-starter-amqp:${springBootStarterVersion}"
     implementation "org.springframework.boot:spring-boot-starter-data-redis-reactive:${springBootStarterVersion}"
-
-    implementation "org.flywaydb:flyway-core:${flywayVersion}"
-    implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
-
-    runtimeOnly "org.postgresql:postgresql:${postgresqlJdbcVersion}"
-    runtimeOnly "org.postgresql:r2dbc-postgresql:${r2dbcPostgreSqlVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-data-mongodb-reactive:${springBootStarterVersion}"
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-    // Open API
+    // Open API Swagger
     implementation "org.springdoc:springdoc-openapi-starter-webflux-ui:${openApiVersion}"
 
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"

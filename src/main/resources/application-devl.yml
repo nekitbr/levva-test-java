@@ -1,18 +1,4 @@
 spring:
-  application:
-    name: "teste-levve-java"
-  flyway:
-    enabled: true
-    url: ${secrets.db.jdbc_url}
-    user: ${secrets.db.username}
-    password: ${secrets.db.password}
-    baseline-version: 0
-    baselineOnMigrate: true
-    locations: classpath:db/migration
-  r2dbc:
-    url: ${secrets.db.r2dbc_url}
-    username: ${secrets.db.username}
-    password: ${secrets.db.password}
   rabbitmq:
     host: ${secrets.rabbitmq.host}
     port: ${secrets.rabbitmq.port}
@@ -22,3 +8,6 @@ spring:
     redis:
       host: ${secrets.redis.host}
       port: ${secrets.redis.port}
+    mongodb:
+      database: ${secrets.mongodb.database}
+      uri: mongodb://${secrets.mongodb.host}:${secrets.mongodb.port}

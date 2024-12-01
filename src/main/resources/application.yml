@@ -1,12 +1,17 @@
 spring:
-  profiles:
-    active: [ "local_vault", "devl" ]
+  application:
+    name: "teste-levve-java"
+  #  profiles:
+  #    active: [ "local_vault", "devl" ]
   main:
     allow-bean-definition-overriding: true
   rabbitmq:
     listener:
       simple:
         acknowledge-mode: manual
+  data:
+    mongodb:
+      auto-index-creation: true # this will cause an error on app startup if the index already exists. The error does not impede the application in any way.
 springdoc:
   api-docs:
     path: /swagger-api-docs

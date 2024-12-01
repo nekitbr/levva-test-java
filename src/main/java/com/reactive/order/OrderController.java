@@ -22,15 +22,21 @@ public class OrderController {
     @Operation(description = "returns an order that matches the given id")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{id}")
-    public Mono<Order> getOrderById(@PathVariable Long id) {
+    public Mono<OrderEntity> getOrderById(@PathVariable String id) {
         return orderService.getOrderById(id);
     }
 
     @Operation(description = "returns all orders within given period, pageable")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
-    public Flux<Order> getOrders(@RequestParam int page, @RequestParam int size) {
+    public Flux<OrderEntity> getOrders(@RequestParam int page, @RequestParam int size) {
         return orderService.getOrdersByPage(page, size);
     }
 
+    @Operation(description = "returns an order that matches the given fiscal code")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/fiscalcode/{fiscalCode}")
+    public Mono<OrderEntity> getOrderByFiscalCode(@PathVariable String fiscalCode) {
+        return orderService.getOrderByFiscalCode(fiscalCode);
+    }
 }
