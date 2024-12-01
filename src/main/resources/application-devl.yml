@@ -1,6 +1,4 @@
 spring:
-  application:
-    name: "teste-levve-java"
   rabbitmq:
     host: ${secrets.rabbitmq.host}
     port: ${secrets.rabbitmq.port}
