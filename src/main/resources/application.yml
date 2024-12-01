@@ -1,8 +1,8 @@
 spring:
   application:
     name: "teste-levve-java"
-  profiles:
-    active: [ "local_vault", "devl" ]
+  #  profiles:
+  #    active: [ "local_vault", "devl" ]
   main:
     allow-bean-definition-overriding: true
   rabbitmq:

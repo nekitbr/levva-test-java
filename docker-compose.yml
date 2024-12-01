@@ -1,0 +1,43 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: devl
+      SECRETS_RABBITMQ_HOST: rabbitmq
+      SECRETS_RABBITMQ_PORT: 5672
+      SECRETS_RABBITMQ_USERNAME: guest
+      SECRETS_RABBITMQ_PASSWORD: guest
+      SECRETS_REDIS_HOST: redis
+      SECRETS_REDIS_PORT: 6379
+      SECRETS_MONGODB_DATABASE: admin
+      SECRETS_MONGODB_HOST: mongodb
+      SECRETS_MONGODB_PORT: 27017
+      SECRETS_TESTE_NOME: pedro
+    depends_on:
+      - rabbitmq
+      - redis
+      - mongodb
+
+  rabbitmq:
+    image: "rabbitmq:management"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  redis:
+    image: "redis"
+    ports:
+      - "6379:6379"
+
+  mongodb:
+    image: "mongo"
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: admin

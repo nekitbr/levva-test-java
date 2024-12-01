@@ -1,8 +1,8 @@
 FROM amazoncorretto:21-alpine
 
-WORKDIR "/levva-test"
+WORKDIR /levva-test
 
-COPY "./" "./"
+COPY . .
 
 RUN chmod +x gradlew
 RUN ./gradlew build -x test --no-daemon

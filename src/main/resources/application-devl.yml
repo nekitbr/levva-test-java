@@ -10,4 +10,4 @@ spring:
       port: ${secrets.redis.port}
     mongodb:
       database: ${secrets.mongodb.database}
-      uri: ${secrets.mongodb.uri}
+      uri: mongodb://${secrets.mongodb.host}:${secrets.mongodb.port}
