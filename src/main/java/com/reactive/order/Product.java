@@ -15,7 +15,7 @@ public class Product {
     @Indexed
     private Long id;
     private String name;
-    private Double price;
+    private Long price;
     private Long quantity;
 
 }

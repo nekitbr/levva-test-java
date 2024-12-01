@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -41,7 +43,7 @@ public class OrderService {
     private Mono<OrderEntity> createOrder(OrderRequest orderRequest) {
         var unsavedOrder = OrderEntity.builder()
             .fiscalCode(orderRequest.getFiscalCode())
-            .price(orderRequest.getProducts().stream().mapToDouble(Product::getPrice).sum())
+            .price(sumProductsTotalPrice(orderRequest.getProducts()))
             .currency(orderRequest.getCurrency().getCurrencyCode())
             .status(OrderStatus.FINISHED)
             .customerId(orderRequest.getCustomerId())
@@ -49,6 +51,12 @@ public class OrderService {
             .build();
 
         return orderRepository.save(unsavedOrder);
+    }
+
+    private Long sumProductsTotalPrice(List<Product> products) {
+        return products.stream()
+            .mapToLong(product -> product.getPrice() * product.getQuantity())
+            .sum();
     }
 
 }

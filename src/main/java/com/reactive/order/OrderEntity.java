@@ -26,7 +26,7 @@ public class OrderEntity extends CustomAudit implements Serializable {
     @Indexed(unique = true)
     private String fiscalCode;
     private OrderStatus status;
-    private Double price;
+    private Long price;
     private String currency;
     private List<Product> products;
     private Long customerId;
