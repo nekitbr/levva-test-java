@@ -5,6 +5,7 @@ dependencies {
         springBootStarterVersion = "3.3.0"
         reactorTestVersion = "3.6.6"
         junitVersion = "1.10.2"
+        assertjVersion = "3.26.3"
     }
 
     implementation "org.springframework.boot:spring-boot-starter-webflux:${springBootStarterVersion}"
@@ -26,6 +27,6 @@ dependencies {
     testImplementation "io.projectreactor:reactor-test:${reactorTestVersion}"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junitVersion}"
 
-    testImplementation 'org.assertj:assertj-core:3.26.3'
+    testImplementation "org.assertj:assertj-core:${assertjVersion}"
 
 }
