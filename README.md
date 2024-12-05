@@ -10,6 +10,7 @@ ___
 ## Using the application:
 
 - To send messages into RabbitMQ, access http://localhost:15672/
+    - default credentials are guest/guest
 - open queue orders_queue and start sending payloads
    - example payload:
      `{"fiscalCode":"12j3kb123nj","products":[{"id":1,"name":"produto 1","price":61873,"quantity":3},{"id":2,"name":"produto 2","price":12454,"quantity":1},{"id":3,"name":"produto 3","price":7162,"quantity":1}],"currency":"USD","customerId":123}`
