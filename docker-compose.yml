@@ -1,5 +1,5 @@
 services:
-  app:
+  order:
     build: .
     ports:
       - "8080:8080"
@@ -14,26 +14,37 @@ services:
       SECRETS_MONGODB_DATABASE: admin
       SECRETS_MONGODB_HOST: mongodb
       SECRETS_MONGODB_PORT: 27017
-      SECRETS_TESTE_NOME: pedro
     depends_on:
-      - rabbitmq
-      - redis
-      - mongodb
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
 
   rabbitmq:
     image: "rabbitmq:management"
     ports:
       - "15672:15672"
       - "5672:5672"
-
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 3s
+      timeout: 1s
+      retries: 5
 
   redis:
     image: "redis"
     ports:
       - "6379:6379"
+    healthcheck:
+      test: redis-cli ping | grep PONG
+      interval: 3s
+      timeout: 1s
+      retries: 5
 
   mongodb:
     image: "mongo"
@@ -41,3 +52,5 @@ services:
       - "27017:27017"
     environment:
       MONGO_INITDB_DATABASE: admin
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
