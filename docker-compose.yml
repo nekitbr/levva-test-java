@@ -54,3 +54,6 @@ services:
       MONGO_INITDB_DATABASE: admin
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 3s
+      timeout: 1s
+      retries: 5
