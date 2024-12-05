@@ -1,6 +1,6 @@
 spring:
   application:
-    name: "teste-levve-java"
+    name: "teste-levva-java"
   #  profiles:
   #    active: [ "local_vault", "devl" ]
   main:
